@@ -1,6 +1,6 @@
 {
   "name": "exampler",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "view front-end component examples",
   "main": "index.js",
   "bin": {
