@@ -1,23 +1,39 @@
 var fs = require('fs');
+var fse = require('fs-extra');
 var path = require('path');
 var swig = require('swig');
 var browserify = require('browserify');
 var factorBundle = require('factor-bundle');
+var series = require('run-series');
 
-module.exports = function _exampler_build (options) {
+module.exports = function _exampler_build (options, cb) {
 
-  var examples = require('./lib/dir')(options.dir);
+  options.examples = require('./lib/dir')(options.dir);
 
-  //
-  // js bundles
-  //
-  
+  series([
+    function (callback) {
+      fse.copy(options.dir, options.out, callback);
+    },
+    function (callback) {
+      writeBundles(options, callback);
+    },
+    function (callback) {
+      writeIndexes(options, callback);
+    },
+  ], cb)
+
+};
+
+//
+// js bundles
+//
+function writeBundles (options, callback) {
   // get entries
   var entries = [];
   var outputs = [];
-  examples.forEach(function (name) {
-    entries.push(path.join(options.dir, name, "app.js"));
-    outputs.push(path.join(options.dir, name, "bundle.js"));
+  options.examples.forEach(function (name) {
+    entries.push(path.join(options.dir, name, "index.js"));
+    outputs.push(path.join(options.out, name, "bundle.js"));
   });
 
   var b = browserify({
@@ -29,26 +45,31 @@ module.exports = function _exampler_build (options) {
     o: outputs,
   });
 
-  var commonBundleFile = fs.createWriteStream(path.join(options.dir, "common.js"));
-  
-  b.bundle().pipe(commonBundleFile);
+  var commonBundleFile = fs.createWriteStream(path.join(options.out, "common.js"));
 
-  //
-  // html indexes
-  //
+  b.bundle().pipe(commonBundleFile)
+  .on('error', callback)
+  .on('close', function () { callback(); })
+  ;
+}
+
+//
+// html indexes
+//
+function writeIndexes (options, callback) {
 
   // index templates
   var topIndexTemplate = swig.compileFile(__dirname + '/views/index.swig');
   var exampleIndexTemplate = swig.compileFile(__dirname + '/views/example.swig');
 
-  examples.forEach(function (example) {
+  options.examples.forEach(function (example) {
 
     // render top index.html
     var topIndexContent = topIndexTemplate({
       name: options.name,
-      examples: examples,
+      examples: options.examples,
     });
-    var topIndexPath = path.join(options.dir, "index.html");
+    var topIndexPath = path.join(options.out, "index.html");
     fs.writeFileSync(topIndexPath, topIndexContent);
 
     // render example/index.html
@@ -56,7 +77,9 @@ module.exports = function _exampler_build (options) {
       name: options.name,
       example: example,
     });
-    var exampleIndexPath = path.join(options.dir, example, "index.html");
+    var exampleIndexPath = path.join(options.out, example, "index.html");
     fs.writeFileSync(exampleIndexPath, exampleIndexContent);
   });
+
+  process.nextTick(callback);
 };
