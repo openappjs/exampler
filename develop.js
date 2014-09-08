@@ -34,7 +34,7 @@ module.exports = function _exampler_develop (options) {
   var entries = {};
   examples.forEach(function (name) {
     entries[path.join('/examples', name, 'bundle.js')] =
-      path.join(options.dir, name, "app.js");
+      path.join(options.dir, name, "index.js");
   });
   // use beefy as live bundler
   app.use(beefy({
