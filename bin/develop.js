@@ -12,6 +12,4 @@ var options = require('../lib/argv')({
 
 var app = exampler(options);
 
-console.log(options);
-
 app.listen(options.port);
