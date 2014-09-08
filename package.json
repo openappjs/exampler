@@ -4,7 +4,8 @@
   "description": "view front-end component examples",
   "main": "index.js",
   "bin": {
-    "exampler-develop": "bin/develop.js"
+    "exampler-develop": "bin/develop.js",
+    "exampler-build": "bin/build.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -32,6 +33,7 @@
     "beefy": "^2.1.1",
     "browserify": "^5.11.1",
     "express": "^4.8.8",
+    "factor-bundle": "^2.2.1",
     "swig": "^1.4.2",
     "yargs": "^1.3.1"
   }
