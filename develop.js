@@ -6,12 +6,7 @@ var express = require('express');
 
 module.exports = function _exampler_develop (options) {
 
-  var examples = fs.readdirSync(options.dir)
-  .filter(function (name) {
-    // example directories are all except names ending in .swig
-    return (name.substring(name.length - 5, name.length) !== '.swig');
-  })
-  ;
+  var examples = require('./lib/dir')(options.dir);
 
   var app = express();
 
